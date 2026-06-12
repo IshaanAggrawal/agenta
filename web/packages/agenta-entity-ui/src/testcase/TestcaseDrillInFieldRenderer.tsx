@@ -111,6 +111,7 @@ function TextEditor({
     markdown,
     onChange,
     readOnly,
+    viewMode,
 }: {
     editorId: string
     value: unknown
@@ -118,14 +119,20 @@ function TextEditor({
     markdown?: boolean
     onChange: (value: unknown) => void
     readOnly?: boolean
+    viewMode?: ViewMode
 }) {
-    // Auto-infer native types from typed text so number / boolean values
-    // stop getting stored as strings. Anything that doesn't look exactly
-    // like a clean number or boolean literal stays a string — see
-    // inferPrimitiveFromText for the precise rules.
+    // When the user explicitly chose "text" or "markdown" from the dropdown,
+    // every value they type must stay a string — no auto-coercion.
+    // inferPrimitiveFromText only fires for the legacy fallback (viewMode
+    // is undefined) where auto-detection is the intended behaviour.
     const handleChange = useCallback(
-        (next: string) => onChange(inferPrimitiveFromText(next)),
-        [onChange],
+        (next: string) =>
+            onChange(
+                viewMode === "text" || viewMode === "markdown"
+                    ? next
+                    : inferPrimitiveFromText(next),
+            ),
+        [onChange, viewMode],
     )
 
     return (
@@ -262,6 +269,7 @@ export function TestcaseDrillInFieldRenderer({
                 displayValue={displayValue}
                 onChange={onChange}
                 readOnly={!editable}
+                viewMode={viewMode}
             />
         )
     }
@@ -287,6 +295,7 @@ export function TestcaseDrillInFieldRenderer({
             displayValue={displayValue}
             onChange={onChange}
             readOnly={!editable}
+            viewMode={viewMode}
         />
     )
 }
